@@ -15,8 +15,8 @@ declare global {
 }
 
 dotenv.config();
-try {
-
+ 
+      console.log(process.env.MONGO_URI)
       const app = express();
       const PORT = process.env.PORT || 5000;
 
@@ -63,8 +63,4 @@ try {
             console.log(`Server running on port ${PORT}`);
       });
 
-} catch (error) {
-      console.log('app.ts error')
-      console.log(error)
-
-}
+ 

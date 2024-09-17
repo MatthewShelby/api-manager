@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Test</title>
+      <style>
+            table {
+                  border-collapse: collapse;
+            }
+
+            th,
+            td {
+
+                  padding: 2px 4px;
+                  border: 1px black solid;
+
+            }
+      </style>
+</head>
+
+<body>
+
+      <h3>Submit a Request:</h3>
+      <label for="">address:</label>
+      <br>
+      <input type="text" id="address">
+      <br>
+      <br>
+      <label for="">amount:</label>
+      <br>
+      <input type="number" id="amount">
+      <br>
+      <br>
+      <button onclick="sendTicket()">Send</button>&nbsp;&nbsp;&nbsp; <label for="" id="res"></label>
+      <br>
+      <hr><br>
+
+      <h3>Track Request:</h3>
+      <label for="">Ticket Id:</label>
+      <br>
+      <input type="text" id="chechTicket">
+      <br><br>
+      <button onclick="sendTicketId()">Check</button>&nbsp;&nbsp;&nbsp; <label for="" id="checkres"></label>
+
+
+
+
+      <br>
+      <hr><br>
+      <h3>Test Payments:</h3>
+      <button onclick="getAllPay()">Pull Payment Requests</button>
+      <br>
+      <table>
+            <thead>
+                  <tr>
+                        <th>Status</th>
+                        <th>Queue</th>
+                        <th>Time</th>
+                        <th>TicketId</th>
+                        <th>Amount</th>
+                        <th>Address</th>
+                  </tr>
+            </thead>
+            <tbody id="tb">
+                  <tr>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                        <td> </td>
+                  </tr>
+            </tbody>
+      </table>
+      <a href=""></a>
+
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
+            integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+      <script>
+            const baseURL = 'http://127.0.0.1:5000/'
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudCI6eyJpZCI6IjEyNWEifSwiaWF0IjoxNzI2NTAyNDk5LCJleHAiOjE3MjY1ODg4OTl9.eOx5SP4_6jteIz7CTNviEcbSoIBJMxeHtvM5iu1cRUg"
+
+            $(document).ready(() => {
+                  console.log("ready")
+                  localStorage.setItem("time", new Date(Date.now()))
+            })
+
+            function getTime() {
+                  console.log(localStorage.getItem('time'));
+            }
+            function testBU() {
+                  let data = "te6cckEBAQEADgAAGNUydtsAAAAAAAAAAPfBmNw="
+                  const dataBuffer = Buffer.from(data)
+                  const utf16Decoder = new TextDecoder('UTF-8')
+
+                  console.log(utf16Decoder.decode(dataBuffer))
+
+            }
+
+            async function writePayments(pdt) {
+
+                  if (!pdt) {
+                        window.alert('Couldn\'t Pull the Data!')
+                  } else {
+                        let rows = ""
+                        pdt.forEach(element => {
+                              rows += `<tr>
+                              <td>${element.status}</td>
+                              <td>${element.queue}</td>
+                              <td>${element.time}</td>
+                              <td>${element.ticketId}</td>
+                              <td>${element.amount}</td>
+                              <td>${element.address}</td>
+                              </tr>`
+                        });
+                        $('#tb').html(rows)
+                  }
+
+            }
+            function sendTicketId() {
+                  let ticket = $('#chechTicket').val()
+
+                  console.info(ticket)
+                  $.ajax({
+                        url: baseURL + 'getTicketById?ticketId=' + ticket,
+                        method: "Get",
+
+                        contentType: "Application/json",
+                        headers: { "Authorization": ("bearer " + token) },
+                        // headers:"Authorization eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudCI6eyJpZCI6IjEyNWEifSwiaWF0IjoxNzI2MzEzODI5LCJleHAiOjE3MjYzMTc0Mjl9._aT2Jlg8XibTSC6_CR_jcA5SUXZ_cNSgPfKgBAG5mPY",
+                        success: (res) => {
+                              if (res.data.length == 0) {
+                                    $('#checkres').html('Cold\'nt find ticket')
+
+                              } else {
+                                    console.log(res)
+                                    let txt = res.data.status;
+                                    console.log('txt:')
+                                    console.log(txt)
+                                    if (txt == undefined) {
+                                          let rr = res.data.result;
+                                          txt = "unknown - status: " + rr
+                                    }
+
+
+
+                                    if (res.data.status == "success") {
+                                          txt = 'Transfer success. <a target="_blank" href="https://testnet.tonviewer.com/transaction/' + res.data.result.event_id + '">See on ton viewer</a>'
+                                    }
+                                    $('#checkres').html(txt)
+                              }
+                        },
+                        error: (err) => {
+                              console.error('Send ticket error');
+                              console.info(err)
+                              if (err.responseJSON.errorInternalCode == "getTicketById-404") {
+                                    $('#checkres').html("Couldn\'t fint the ticket.")
+                              } else {
+                                    $('#checkres').html("Error on Send.")
+                              }
+
+                        }
+                  })
+            }
+            async function sendTicket() {
+                  let ticket = {
+                        ticketId: 'T' + Date.now(),
+                        address: $('#address').val(),
+                        amount: $('#amount').val()
+                  }
+                  console.info(ticket)
+                  let texted = JSON.stringify(ticket)
+                  console.log(texted)
+                  var encrypted = CryptoJS.AES.encrypt(texted, "Base64-root4378");
+                  let end = await encrypted.toString()
+                  console.log('encrypted end')
+                  console.log(end)
+                  var decrypted = await CryptoJS.AES.decrypt(encrypted, "Base64-root4378");
+                  console.log('decrypted')
+                  
+                  console.log(decrypted)
+                  console.log('decrypted utf8')
+                  console.log(await decrypted.toString(CryptoJS.enc.Utf8))
+
+                  let myBody = { encryptedTicket: end }
+                  let toSendBody = JSON.stringify(myBody)
+                  console.log("toSendBody:")
+                  console.log(toSendBody)
+                  $.ajax({
+                        url: baseURL + 'sendticket',
+                        method: "POST",
+                        data: toSendBody,
+                        contentType: "Application/json",
+                        headers: { "Authorization": ("bearer " + token) },
+                        // headers:"Authorization eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZ2VudCI6eyJpZCI6IjEyNWEifSwiaWF0IjoxNzI2MzEzODI5LCJleHAiOjE3MjYzMTc0Mjl9._aT2Jlg8XibTSC6_CR_jcA5SUXZ_cNSgPfKgBAG5mPY",
+                        success: (res) => {
+                              console.log(res)
+                              $('#res').html(`Successfully Sent. Ticket Id: <b>${res.data.ticketId}</b>`)
+                        },
+                        error: (err) => {
+                              console.error('Send ticket error');
+                              console.info(err)
+                              $('#res').html("Error on Send.")
+
+                        }
+                  })
+            }
+            async function getAllPay() {
+                  $.ajax({
+                        url: baseURL + 'allPay',
+                        success: (res) => {
+                              console.log(res)
+                              writePayments(res.data.reverse())
+                        },
+                        error: (err) => {
+                              console.log(err)
+                              writePayments(null)
+
+                        }
+                  })
+            }
+            function getAll() {
+                  $.ajax({
+                        url: baseURL + 'all',
+                        success: (res) => {
+                              console.log(res)
+                        },
+                        error: (err) => {
+                              console.log(err)
+
+                        }
+                  })
+            }
+            function getLogin() {
+                  $.ajax({
+                        url: baseURL + 'login',
+                        success: (res) => {
+                              console.log(
+                                    res
+                              )
+                        }
+                  })
+            }
+            function getTest() {
+                  $.ajax({
+                        url: baseURL + 'test',
+                        success: (res) => {
+                              console.log(
+                                    res
+                              )
+                        }
+                  })
+            }
+      </script>
+</body>
+
+</html>

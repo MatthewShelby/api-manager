@@ -1,0 +1,8 @@
+{
+      "ignore": [
+            "src/controller/ress.json",
+            "./ress.json",
+            "ress.json",
+            "README"
+      ]
+}

@@ -1,9 +1,4 @@
-import { Address } from '@ton/ton';
-import e from 'express';
-import TonWeb from 'tonweb'
 import keyVal from '../models/keyVal';
-
-const fs = require('fs')
 
 const senderId = "0%3Aa0177548f737ad8db73df80b85b3b1471ad8efd35b484f26a81ffc7d396cd5ff";
 const jettonId = "0%3Aadace6b67e49db9baa17b254644fb24984c73329a5e8f09889271706cd7dec2a";

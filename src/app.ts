@@ -1,5 +1,8 @@
 
-import express, { Response, Request } from 'express';
+let express = require('express');
+import connectDB from './config/db';
+import ticketRoutes from './routes/ticket';
+let dotenv = require('dotenv')
 const cors = require('cors');
 
 
@@ -11,24 +14,26 @@ declare global {
       }
 }
 
+dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
+connectDB();
 
 app.use(express.json());
 
 
 
 
-app.use(function (req, res, next) {
+app.use(function (req:any, res:Response, next:any) {
       console.log("origin:")
       console.log(req.headers.origin)
       const origin = req.headers.origin;
 
-      if (req.headers.origin == 'https://melarix.com') {
+      if (req.headers.origin == 'https://mtshby.com') {
             app.use(cors({
-                  origin: 'https://melarix.com'
+                  origin: 'https://mtshby.com'
             }));
       }
       if (req.headers.origin == 'http://127.0.0.1:8080') {
@@ -37,26 +42,21 @@ app.use(function (req, res, next) {
             }));
       }
 
-      res.header("Access-Control-Allow-Origin", origin);
-      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      res.headers.set("Access-Control-Allow-Origin", origin);
+      res.headers.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
       next();
 
 });
 
 // just for localdev test
 app.use(cors({ origin: ["http://localhost:3000", "http://127.0.0.1:8080"] }));
-const router = express.Router();
 
-router.get('/test', async (req: Request, res: Response) => {
-      console.log('test is called')
-      try {
 
-            res.status(201).json({ status: "success", msg: "test is ok on the ts " });
-      } catch (err) {
-            res.status(500).json({ msg: 'Server Error' });
-      }
-});
-app.use('', router);
+
+
+
+
+app.use('', ticketRoutes);
 
 app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

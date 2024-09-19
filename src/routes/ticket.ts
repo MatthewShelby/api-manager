@@ -1,7 +1,9 @@
-import express, { Response, Request } from 'express';
+let express = require('express')
+import { Response, Request } from 'express';
 import Ticket from '../models/ticket';
 import auth, { getKey, getPassword, getSecret } from '../middleware/auth';
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
+let jwt = require('jsonwebtoken')
 import PayRequest from '../models/PayRequest';
 import keyVal from '../models/keyVal';
 import { checkQueue, checkThis } from '../controller/paymentProcessor';
@@ -10,7 +12,7 @@ import { confirmTransfer } from '../controller/offchain';
 var CryptoJS = require("crypto-js");
 const router = express.Router();
 
-router.get('/login', (req, res) => {
+router.get('/login', (req: Request, res: Response) => {
 
       let password = req.query.password;
       if (!password || password == '') {
@@ -30,13 +32,13 @@ router.get('/login', (req, res) => {
             payload,
             getKey() || '', // replace with a strong secret key
             { expiresIn: '30d' },
-            (err, token) => {
+            (err:any, token:any) => {
                   if (err) throw err;
                   res.json({ token });
             }
       );
 })
-router.get('/key', async (req, res) => {
+router.get('/key', async (req: Request, res: Response) => {
       try {
             let all = await keyVal.find();
             console.log(typeof (all))
@@ -46,7 +48,7 @@ router.get('/key', async (req, res) => {
             res.status(500).json({ status: 'error', msg: 'Server Error', error: error });
       }
 })
-router.get('/all', async (req, res) => {
+router.get('/all', async (req: Request, res: Response) => {
       try {
             let all = await Ticket.find();
             console.log(typeof (all))
@@ -57,7 +59,7 @@ router.get('/all', async (req, res) => {
       }
 })
 
-router.get('/getTicketById', async (req, res) => {
+router.get('/getTicketById', async (req: Request, res: Response) => {
       let id = req.query.ticketId;
       if (!id || id == '') {
             return res.status(400).json({ status: 'error', msg: 'Invalid ticketId' });
@@ -81,7 +83,7 @@ router.get('/getTicketById', async (req, res) => {
             res.status(500).json({ status: 'error', msg: 'Server Error', error: error });
       }
 })
-router.get('/allPay', async (req, res) => {
+router.get('/allPay', async (req: Request, res: Response) => {
       try {
             let all = await PayRequest.find();
             console.log(typeof (all))
@@ -91,13 +93,13 @@ router.get('/allPay', async (req, res) => {
             res.status(500).json({ status: 'error', msg: 'Server Error', error: error });
       }
 })
-router.get('/chechQueue', (req, res) => {
+router.get('/chechQueue', (req: Request, res: Response) => {
       //"T1726502537896"
       checkQueue()
       res.status(200).json({ status: 'success', data: "checkQueue() has been caalled" });
 
 })
-router.get('/checkTr', async (req, res) => {
+router.get('/checkTr', async (req: Request, res: Response) => {
 
       let id = req.query.ticketId;
       if (!id || id == '') {
@@ -127,12 +129,12 @@ router.post('/sendticket', auth, async (req: Request, res: Response) => {
       // const { ticketId, address, amount } = req.body;
       const { encryptedTicket } = req.body;
       console.log("encryptedTicket:")
-      console.log(encryptedTicket) 
-      
+      console.log(encryptedTicket)
+
       let Sec = getSecret()
       console.log(Sec)
-      
-      var decrypted = await CryptoJS.AES.decrypt(encryptedTicket, Sec );
+
+      var decrypted = await CryptoJS.AES.decrypt(encryptedTicket, Sec);
       console.log("decrypted")
       console.log(decrypted)
 

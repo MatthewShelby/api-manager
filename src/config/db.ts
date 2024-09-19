@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+let jwt = require('jsonwebtoken')
+let dotenv = require('dotenv')
 
 dotenv.config();
 
@@ -16,5 +17,9 @@ const connectDB = async () => {
             process.exit(1);
       }
 };
+
+export function getSeed(){
+      return process.env.seed;
+}
 
 export default connectDB;

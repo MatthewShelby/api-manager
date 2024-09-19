@@ -1,31 +1,13 @@
-import { Address, internal, beginCell, contractAddress, toNano, Cell, TonClient4, WalletContractV4, fromNano, TonClient, JettonWallet, JettonMaster } from "@ton/ton";
+import { Address, internal, beginCell, contractAddress, toNano, Cell, TonClient4, WalletContractV4, fromNano } from "@ton/ton";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import { buildOnchainMetadata } from "../utils/jetton-helpers";
 import { SampleJetton } from "../utils/output/SampleJetton_SampleJetton";
-import { JettonDefaultWallet, storeTokenTransfer } from "../utils/output/SampleJetton_JettonDefaultWallet";
-import dotenv from 'dotenv';
-import { env } from "process";
-import keyVal from "../models/keyVal";
-
+import { storeTokenTransfer } from "../utils/output/SampleJetton_JettonDefaultWallet";
+import { getSeed } from "../config/db";
+let dotenv = require('dotenv');
 dotenv.config();
 const jetton_minter_root = Address.parse("EQCtrOa2fknbm6oXslRkT7JJhMczKaXo8JiJJxcGzX3sKpVs");
 
-async function getHistory(address: string) {
-      // let deployer_wallet = SampleJetton.fromAddress(Address.parse(address));
-      // const client4 = new TonClient4({
-      //       endpoint: "https://sandbox-v4.tonhubapi.com",
-      //       // endpoint: "https://mainnet-v4.tonhubapi.com",
-      // });
-      // let deployer_wallet_contract = client4.open(deployer_wallet);
-      // let thisBalance = await deployer_wallet_contract.
-      return address;
-}
-export async function getStatus(inp: string) {
-      return "Status for" + inp
-}
-export async function getResult(inp: string) {
-      return "Result for" + inp
-}
 export async function process(inp: string) {
       let req = JSON.parse(inp);
       console.log(req)
@@ -34,32 +16,12 @@ export async function process(inp: string) {
       let processResult = await sendBonus(req.amount, req.ticketId.toString(), 0.1, req.address, req.ticketId)
       console.log(processResult)
 
-      // Account2:
-      //0QDvIlV7vw3BfoT_f3YBVgmBNuRy3Id9Rv55rBGwRCRRIZUW
-      // let st = "succed"
-      // if (processResult.status == 'success') {
-
-      //       return {
-      //             result: 'Seemingly Seccessfull Send',
-      //             status: "succeed"
-      //       }
-      // } else {
-      //       return {
-      //             result: processResult.result,
-      //             status: "failed"
-      //       }
-      // }
 }
-
 
 
 
 async function sendBonus(bonusAmount: number, comment: String, deployTonAmount: number, receiverAddressString: string, ticketId: string) {
       try {
-
-            // let contract_address = new JettonMaster(jetton_minter_root);
-            let contract_address = SampleJetton.fromAddress(jetton_minter_root);
-
             const test_message = beginCell()
                   .storeBit(1)
                   .storeRef(beginCell().storeUint(0, 32).storeBuffer(Buffer.from(comment, "utf-8")).endCell())
@@ -67,16 +29,12 @@ async function sendBonus(bonusAmount: number, comment: String, deployTonAmount: 
 
             let deployAmount = toNano(deployTonAmount.toString());
 
-
-
-
-
             const client4 = new TonClient4({
                   endpoint: "https://sandbox-v4.tonhubapi.com",
                   // endpoint: "https://mainnet-v4.tonhubapi.com",
             });
 
-            let loadedMnemonics = env.seed;
+            let loadedMnemonics = getSeed()
             console.log("loadedMnemonics: " + loadedMnemonics)
             let mnemonics = (loadedMnemonics || "").toString(); // 🔴 Change to your own, by creating .env file!
             let keyPair = await mnemonicToPrivateKey(mnemonics.split(" "));
@@ -96,14 +54,10 @@ async function sendBonus(bonusAmount: number, comment: String, deployTonAmount: 
             }
 
 
-
-
-
             let wallet = WalletContractV4.create({
                   workchain,
                   publicKey: keyPair.publicKey,
             });
-
 
             let wallet_contract = client4.open(wallet);
             const jettonParams = {
@@ -135,10 +89,6 @@ async function sendBonus(bonusAmount: number, comment: String, deployTonAmount: 
 
 
 
-
-
-
-
             // Create content Cell
             let content = buildOnchainMetadata(jettonParams);
             let init = await SampleJetton.init(wallet_contract.address, content, max_supply);
@@ -165,17 +115,12 @@ async function sendBonus(bonusAmount: number, comment: String, deployTonAmount: 
                   ],
             });
             console.log("Transfer transaction has been send.")
-            // console.log(sendResult)
-            // let lastResult = new keyVal({ key: "txResult" + ticketId, value: { sendResult: sendResult } })
-            // await lastResult.save()
             return ({ status: "success", result: sendResult })
 
       } catch (error) {
             console.log('Error In Sending Transaction')
             console.log(error)
             return ({ status: "error", message: error })
-
       }
-
 }
 

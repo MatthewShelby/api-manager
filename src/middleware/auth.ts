@@ -1,8 +1,8 @@
-import jwt from 'jsonwebtoken';
+let jwt= require('jsonwebtoken')
 import { Request, Response, NextFunction } from 'express';
 // import { ICustomRequest} from '../models/request'
 
-import dotenv from 'dotenv';
+let dotenv =require('dotenv')
 
 dotenv.config();
 
